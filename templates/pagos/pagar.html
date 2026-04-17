@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagar pase — {{ reserva.evento.nombre }} — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+  .pay-wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: var(--sp-8) var(--sp-5) var(--sp-9);
+  }
+  @media (min-width: 600px) {
+    .pay-wrap { padding: var(--sp-8) var(--sp-6) var(--sp-9); }
+  }
+
+  .pay-header {
+    margin-bottom: var(--sp-6);
+    text-align: center;
+  }
+  .pay-header__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    display: block;
+    margin-bottom: var(--sp-2);
+  }
+  .pay-header__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    line-height: 1;
+  }
+
+  /* Summary strip */
+  .pay-summary {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    padding: var(--sp-4) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+    flex-wrap: wrap;
+  }
+  .pay-summary__event {
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--clr-text);
+    line-height: 1.2;
+  }
+  .pay-summary__meta {
+    font-size: 0.78rem;
+    color: var(--clr-muted);
+    margin-top: 2px;
+  }
+  .pay-summary__amount {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--clr-dark);
+    white-space: nowrap;
+  }
+  .pay-summary__amount-label {
+    font-size: 0.60rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    display: block;
+    text-align: right;
+    margin-bottom: 2px;
+  }
+
+  /* Method cards */
+  .pay-methods {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-6);
+  }
+  .pay-method {
+    position: relative;
+  }
+  .pay-method input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .pay-method__label {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-4) var(--sp-5);
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    cursor: pointer;
+    transition: border-color var(--t-fast), background var(--t-fast);
+    user-select: none;
+  }
+  .pay-method__label:hover {
+    border-color: oklch(72% 0.13 75);
+  }
+  .pay-method input[type="radio"]:checked + .pay-method__label {
+    border-color: var(--clr-gold);
+    background: var(--clr-gold-light);
+  }
+  .pay-method__radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color var(--t-fast);
+  }
+  .pay-method input[type="radio"]:checked + .pay-method__label .pay-method__radio {
+    border-color: var(--clr-gold);
+    background: var(--clr-gold);
+  }
+  .pay-method__radio::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--clr-dark);
+    opacity: 0;
+    transition: opacity var(--t-fast);
+  }
+  .pay-method input[type="radio"]:checked + .pay-method__label .pay-method__radio::after {
+    opacity: 1;
+  }
+  .pay-method__icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pay-method__icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--clr-dark);
+  }
+  .pay-method__info {
+    flex: 1;
+  }
+  .pay-method__name {
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--clr-text);
+    line-height: 1;
+  }
+  .pay-method__desc {
+    font-size: 0.76rem;
+    color: var(--clr-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .pay-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  @media (min-width: 400px) {
+    .pay-actions { flex-direction: row; }
+    .pay-actions .btn-full { flex: 1; }
+  }
+
+  .pay-notice {
+    margin-top: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--clr-gold-light);
+    border: 1px solid var(--clr-cream-dark);
+    font-size: 0.78rem;
+    color: var(--clr-dark);
+    line-height: 1.6;
+    text-align: center;
+  }
+{% endblock %}
+
+{% block content %}
+<div class="pay-wrap">
+
+  <div class="pay-header">
+    <span class="pay-header__eyebrow">Completar reserva</span>
+    <h1 class="pay-header__title">Seleccioná tu método</h1>
+  </div>
+
+  <!-- Summary -->
+  <div class="pay-summary">
+    <div>
+      <div class="pay-summary__event">{{ reserva.evento.nombre }}</div>
+      <div class="pay-summary__meta">
+        {{ reserva.tipo_ticket.nombre }} &times; {{ reserva.cantidad }}
+        &nbsp;&middot;&nbsp; {{ reserva.evento.fecha }}
+      </div>
+    </div>
+    <div>
+      <span class="pay-summary__amount-label">Total</span>
+      <div class="pay-summary__amount">${{ monto|floatformat:0 }}</div>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="pay-methods">
+
+      <!-- Tarjeta -->
+      <div class="pay-method">
+        <input type="radio" name="metodo" id="m-tarjeta" value="tarjeta" required>
+        <label class="pay-method__label" for="m-tarjeta">
+          <div class="pay-method__radio"></div>
+          <div class="pay-method__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="1" y="4" width="22" height="16" rx="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div class="pay-method__info">
+            <div class="pay-method__name">Tarjeta</div>
+            <div class="pay-method__desc">Crédito o débito — Visa, Mastercard, Amex</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- PSE -->
+      <div class="pay-method">
+        <input type="radio" name="metodo" id="m-pse" value="pse">
+        <label class="pay-method__label" for="m-pse">
+          <div class="pay-method__radio"></div>
+          <div class="pay-method__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <path d="M2 10h20"/>
+              <path d="M6 15h2M10 15h4"/>
+            </svg>
+          </div>
+          <div class="pay-method__info">
+            <div class="pay-method__name">PSE</div>
+            <div class="pay-method__desc">Débito bancario en línea — todos los bancos colombianos</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Efectivo -->
+      <div class="pay-method">
+        <input type="radio" name="metodo" id="m-efectivo" value="efectivo">
+        <label class="pay-method__label" for="m-efectivo">
+          <div class="pay-method__radio"></div>
+          <div class="pay-method__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="2" y="6" width="20" height="12" rx="1"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M6 6v12M18 6v12"/>
+            </svg>
+          </div>
+          <div class="pay-method__info">
+            <div class="pay-method__name">Efectivo</div>
+            <div class="pay-method__desc">Pago en punto físico — Éxito, Baloto, Efecty</div>
+          </div>
+        </label>
+      </div>
+
+    </div>
+
+    <div class="pay-actions">
+      <button type="submit" class="btn btn-dark btn-lg btn-full">
+        Confirmar pago
+      </button>
+      <a href="{% url 'mis_reservas' %}" class="btn btn-ghost btn-lg btn-full">
+        Volver
+      </a>
+    </div>
+  </form>
+
+  <p class="pay-notice">
+    Este es un entorno de demostración. Ningún cargo real será procesado.
+  </p>
+
+</div>
+{% endblock %}

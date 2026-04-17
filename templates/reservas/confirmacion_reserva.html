@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block title %}Pase confirmado — {{ reserva.evento.nombre }} — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+  /* ========================
+     CONFIRMATION PAGE
+     ======================== */
+  .confirm-wrap {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: var(--sp-8) var(--sp-5) var(--sp-9);
+  }
+  @media (min-width: 600px) {
+    .confirm-wrap { padding: var(--sp-8) var(--sp-6) var(--sp-9); }
+  }
+
+  /* Success badge at top */
+  .confirm-checkmark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-6);
+    text-align: center;
+  }
+  .confirm-checkmark__circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--clr-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 8px oklch(72% 0.13 75 / 0.15);
+  }
+  .confirm-checkmark__circle svg {
+    width: 32px; height: 32px;
+    color: var(--clr-dark);
+    stroke-width: 3;
+  }
+  .confirm-checkmark__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    line-height: 1;
+  }
+  .confirm-checkmark__sub {
+    font-size: 0.88rem;
+    color: var(--clr-muted);
+    line-height: 1.6;
+  }
+
+  /* The actual ticket stub */
+  .ticket-stub {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    overflow: hidden;
+    margin-bottom: var(--sp-5);
+  }
+
+  .ticket-stub__header {
+    background: var(--clr-dark);
+    padding: var(--sp-4) var(--sp-5);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .ticket-stub__event {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    line-height: 1.1;
+  }
+  .ticket-stub__category {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .ticket-stub__body {
+    padding: var(--sp-4) var(--sp-5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3) var(--sp-5);
+  }
+  @media (min-width: 480px) {
+    .ticket-stub__body { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .ticket-stub__field-label {
+    font-family: var(--font-display);
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .ticket-stub__field-value {
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+
+  /* Barcode strip */
+  .ticket-stub__perf {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .ticket-stub__perf::before,
+  .ticket-stub__perf::after {
+    content: '';
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    margin: 0 -11px;
+    z-index: 1;
+  }
+  .ticket-stub__perf-line {
+    flex: 1;
+    border-top: 2px dashed oklch(55% 0.01 65);
+  }
+
+  .ticket-stub__footer {
+    padding: var(--sp-3) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .ticket-stub__id {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+  }
+
+  /* Barcode decoration */
+  .ticket-stub__barcode {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 28px;
+  }
+  .ticket-stub__barcode span {
+    display: inline-block;
+    width: 3px;
+    background: var(--clr-dark);
+    opacity: 0.3;
+  }
+
+  .confirm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  @media (min-width: 400px) {
+    .confirm-actions { flex-direction: row; }
+    .confirm-actions .btn-full { flex: 1; }
+  }
+
+  .confirm-note {
+    margin-top: var(--sp-5);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--clr-gold-light);
+    border: 1px solid var(--clr-cream-dark);
+    font-size: 0.80rem;
+    color: var(--clr-dark);
+    line-height: 1.6;
+    text-align: center;
+  }
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+
+  <div class="confirm-checkmark">
+    <div class="confirm-checkmark__circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h1 class="confirm-checkmark__title">¡Pase reservado!</h1>
+    <p class="confirm-checkmark__sub">
+      Tu pase está en estado <strong>Pendiente</strong>.<br>
+      El organizador lo confirmará en breve.
+    </p>
+  </div>
+
+  <!-- Ticket stub -->
+  <div class="ticket-stub" role="region" aria-label="Detalle del pase">
+
+    <div class="ticket-stub__header">
+      <span class="ticket-stub__event">{{ reserva.evento.nombre }}</span>
+      <div class="ticket-stub__category">
+        <span class="badge badge-pending">Pendiente</span>
+      </div>
+    </div>
+
+    <div class="ticket-stub__body">
+      <div>
+        <span class="ticket-stub__field-label">Tipo de pase</span>
+        <span class="ticket-stub__field-value">{{ reserva.tipo_ticket.nombre }}</span>
+      </div>
+      <div>
+        <span class="ticket-stub__field-label">Cantidad</span>
+        <span class="ticket-stub__field-value">{{ reserva.cantidad }}</span>
+      </div>
+      <div>
+        <span class="ticket-stub__field-label">Fecha</span>
+        <span class="ticket-stub__field-value">{{ reserva.evento.fecha }}</span>
+      </div>
+      <div>
+        <span class="ticket-stub__field-label">Hora</span>
+        <span class="ticket-stub__field-value">{{ reserva.evento.hora }}</span>
+      </div>
+      <div>
+        <span class="ticket-stub__field-label">Lugar</span>
+        <span class="ticket-stub__field-value">{{ reserva.evento.lugar.nombre }}</span>
+      </div>
+      <div>
+        <span class="ticket-stub__field-label">Ciudad</span>
+        <span class="ticket-stub__field-value">{{ reserva.evento.lugar.ciudad }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-stub__perf">
+      <div class="ticket-stub__perf-line"></div>
+    </div>
+
+    <div class="ticket-stub__footer">
+      <span class="ticket-stub__id">Pase #{{ reserva.id|stringformat:"05d" }}</span>
+      <!-- decorative barcode -->
+      <div class="ticket-stub__barcode" aria-hidden="true">
+        {% for h in "7324916571832491672" %}
+          <span style="height: {% cycle '60%' '90%' '75%' '100%' '50%' '80%' '65%' '95%' '55%' '85%' %}"></span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <p class="confirm-note">
+    Podés ver y gestionar todos tus pases en <strong>"Mis Pases"</strong>.
+  </p>
+
+  <div class="confirm-actions" style="margin-top: var(--sp-5);">
+    <a href="{% url 'pagar' reserva.id %}" class="btn btn-dark btn-lg btn-full">
+      Pagar ahora
+    </a>
+    <a href="{% url 'mis_reservas' %}" class="btn btn-ghost btn-lg btn-full">
+      Pagar después
+    </a>
+  </div>
+
+</div>
+{% endblock %}

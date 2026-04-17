@@ -1,122 +1,454 @@
 {% extends 'base.html' %}
 
-{% block title %}Catálogo de Eventos{% endblock %}
+{% block title %}Catálogo de Eventos — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+  /* ========================
+     CATALOG PAGE
+     ======================== */
+  .catalog-hero {
+    background: var(--clr-dark);
+    padding: var(--sp-6) 0 var(--sp-5);
+    border-bottom: 3px solid var(--clr-gold);
+  }
+  .catalog-hero__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+  }
+  @media (min-width: 768px) {
+    .catalog-hero__inner { padding: 0 var(--sp-6); }
+  }
+  .catalog-hero__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.60rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    display: block;
+    margin-bottom: var(--sp-3);
+  }
+  .catalog-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    line-height: 0.95;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    background: var(--clr-surface);
+    border-bottom: 2px solid var(--clr-cream-dark);
+    padding: var(--sp-4) 0;
+  }
+  .filter-bar__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    align-items: flex-end;
+  }
+  @media (min-width: 768px) {
+    .filter-bar__inner { padding: 0 var(--sp-6); }
+  }
+
+  .filter-group { display: flex; flex-direction: column; gap: var(--sp-1); flex: 1; min-width: 140px; }
+  .filter-group--search { min-width: 180px; }
+
+  .filter-group label {
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+  }
+  .filter-group select,
+  .filter-group input {
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-cream-dark);
+    color: var(--clr-text);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color var(--t-fast);
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 0;
+    height: 44px;
+  }
+  .filter-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  .filter-group select:focus,
+  .filter-group input:focus { border-color: var(--clr-gold); }
+  .filter-group input::placeholder { color: oklch(65% 0.01 65); }
+
+  .filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--sp-2);
+    flex-shrink: 0;
+  }
+
+  /* Results area */
+  .catalog-body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--sp-6) var(--sp-5) var(--sp-7);
+  }
+  @media (min-width: 768px) {
+    .catalog-body { padding: var(--sp-6) var(--sp-6) var(--sp-7); }
+  }
+
+  .catalog-count {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    margin-bottom: var(--sp-5);
+  }
+
+  /* Ticket card overrides for catalog */
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--sp-5);
+  }
+
+  .catalog-card {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+    text-decoration: none;
+    color: inherit;
+  }
+  .catalog-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 4px 4px 0 var(--clr-border);
+  }
+
+  .catalog-card__img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+  }
+  .catalog-card__img-placeholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--clr-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .catalog-card__img-placeholder svg {
+    width: 40px; height: 40px;
+    color: var(--clr-gold);
+    opacity: 0.35;
+  }
+
+  .catalog-card__body {
+    padding: var(--sp-4);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .catalog-card__cat {
+    display: inline-block;
+    align-self: flex-start;
+  }
+
+  .catalog-card__name {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--clr-dark);
+    line-height: 1.1;
+    flex: 1;
+  }
+
+  .catalog-card__desc {
+    font-size: 0.84rem;
+    color: var(--clr-muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Perforated divider */
+  .catalog-card__perf {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .catalog-card__perf::before,
+  .catalog-card__perf::after {
+    content: '';
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    margin: 0 -8px;
+    z-index: 1;
+  }
+  .catalog-card__perf-line {
+    flex: 1;
+    border-top: 2px dashed oklch(55% 0.01 65);
+  }
+
+  .catalog-card__footer {
+    padding: var(--sp-3) var(--sp-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .catalog-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .catalog-card__date {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--clr-text);
+  }
+  .catalog-card__venue {
+    font-size: 0.72rem;
+    color: var(--clr-muted);
+  }
+
+  /* Empty state */
+  .catalog-empty {
+    text-align: center;
+    padding: var(--sp-9) 0;
+  }
+  .catalog-empty__icon {
+    width: 56px; height: 56px;
+    color: var(--clr-cream-dark);
+    margin: 0 auto var(--sp-4);
+  }
+  .catalog-empty__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    margin-bottom: var(--sp-2);
+  }
+  .catalog-empty__sub {
+    font-size: 0.9rem;
+    color: var(--clr-muted);
+    margin-bottom: var(--sp-5);
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-1);
+    margin-top: var(--sp-7);
+    flex-wrap: wrap;
+  }
+  .page-link {
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: var(--sp-2) var(--sp-3);
+    border: 2px solid var(--clr-cream-dark);
+    color: var(--clr-text);
+    background: var(--clr-surface);
+    transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .page-link:hover { border-color: var(--clr-gold); color: var(--clr-gold); }
+  .page-link--active {
+    background: var(--clr-dark);
+    color: var(--clr-gold);
+    border-color: var(--clr-dark);
+  }
+  .page-link--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="row mb-3">
-    <div class="col-12">
-      <h1>Eventos disponibles</h1>
-    </div>
+<!-- Page header -->
+<section class="catalog-hero">
+  <div class="catalog-hero__inner">
+    <span class="catalog-hero__eyebrow">&#9733; Shows en vivo &#9733;</span>
+    <h1 class="catalog-hero__title">Catálogo de Eventos</h1>
   </div>
+</section>
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label" for="categoria">Categoría</label>
-          <select id="categoria" name="categoria" class="form-select">
-            <option value="">Todas</option>
-            {% for cat in categorias %}
-              <option value="{{ cat.id }}"{% if request.GET.categoria == cat.id|stringformat:"s" %} selected{% endif %}>
-                {{ cat.nombre }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label" for="fecha_inicio">Desde</label>
-          <input id="fecha_inicio" type="date" name="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label" for="fecha_fin">Hasta</label>
-          <input id="fecha_fin" type="date" name="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label" for="q">Buscar</label>
-          <input id="q" type="text" name="q" class="form-control" placeholder="Nombre" value="{{ request.GET.q }}">
-        </div>
-
-        <div class="col-12 d-flex gap-2">
-          <button type="submit" class="btn btn-primary">Filtrar</button>
-          <a class="btn btn-outline-secondary" href="{% url 'catalogo_eventos' %}">Limpiar</a>
-        </div>
-      </form>
+<!-- Filter bar -->
+<div class="filter-bar">
+  <form class="filter-bar__inner" method="get">
+    <div class="filter-group">
+      <label for="f-categoria">Categoría</label>
+      <select id="f-categoria" name="categoria">
+        <option value="">Todas</option>
+        {% for cat in categorias %}
+          <option value="{{ cat.id }}"{% if request.GET.categoria == cat.id|stringformat:"s" %} selected{% endif %}>
+            {{ cat.nombre }}
+          </option>
+        {% endfor %}
+      </select>
     </div>
-  </div>
 
+    <div class="filter-group">
+      <label for="f-desde">Desde</label>
+      <input id="f-desde" type="date" name="fecha_inicio" value="{{ request.GET.fecha_inicio }}">
+    </div>
+
+    <div class="filter-group">
+      <label for="f-hasta">Hasta</label>
+      <input id="f-hasta" type="date" name="fecha_fin" value="{{ request.GET.fecha_fin }}">
+    </div>
+
+    <div class="filter-group filter-group--search">
+      <label for="f-q">Buscar</label>
+      <input id="f-q" type="text" name="q" placeholder="Nombre del evento" value="{{ request.GET.q }}">
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-dark" style="height:44px;">Filtrar</button>
+      <a class="btn btn-ghost" href="{% url 'catalogo_eventos' %}" style="height:44px; line-height:1;">
+        Limpiar
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Results -->
+<div class="catalog-body">
   {% if eventos %}
-    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    <p class="catalog-count">{{ paginator.count }} evento{{ paginator.count|pluralize:"s" }} encontrado{{ paginator.count|pluralize:"s" }}</p>
+
+    <div class="catalog-grid">
       {% for evento in eventos %}
-        <div class="col">
-          <div class="card h-100">
-            {% if evento.imagen %}
-              <img
-                src="{{ evento.imagen.url }}"
-                class="card-img-top"
-                alt="{{ evento.nombre }}"
-                style="height: 200px; object-fit: cover;"
-              >
-            {% endif %}
+        <a href="{% url 'detalle_evento' evento.id %}" class="catalog-card" aria-label="{{ evento.nombre }}">
 
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">{{ evento.nombre }}</h5>
-              <span class="badge bg-secondary mb-2">{{ evento.categoria.nombre }}</span>
-              <p class="card-text">{{ evento.descripcion|truncatechars:130 }}</p>
-
-              <p class="card-text mt-auto mb-2">
-                <small class="text-muted">📅 {{ evento.fecha }} — 🕐 {{ evento.hora }}</small>
-              </p>
-              <p class="card-text mb-3">
-                📍 {{ evento.lugar.nombre }}, {{ evento.lugar.ciudad }}
-              </p>
-
-              <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-sm btn-primary mt-auto">
-                Ver detalle
-              </a>
+          {% if evento.imagen %}
+            <img class="catalog-card__img" src="{{ evento.imagen.url }}" alt="{{ evento.nombre }}" loading="lazy">
+          {% else %}
+            <div class="catalog-card__img-placeholder" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+              </svg>
             </div>
+          {% endif %}
+
+          <div class="catalog-card__body">
+            <div class="catalog-card__cat">
+              <span class="badge badge-dark">{{ evento.categoria.nombre }}</span>
+            </div>
+            <h2 class="catalog-card__name">{{ evento.nombre }}</h2>
+            <p class="catalog-card__desc">{{ evento.descripcion }}</p>
           </div>
-        </div>
+
+          <div class="catalog-card__perf">
+            <div class="catalog-card__perf-line"></div>
+          </div>
+
+          <div class="catalog-card__footer">
+            <div class="catalog-card__meta">
+              <span class="catalog-card__date">{{ evento.fecha }} — {{ evento.hora }}</span>
+              <span class="catalog-card__venue">{{ evento.lugar.nombre }}, {{ evento.lugar.ciudad }}</span>
+            </div>
+            <span class="btn btn-gold btn-sm" aria-hidden="true">Ver</span>
+          </div>
+        </a>
       {% endfor %}
     </div>
+
   {% else %}
-    <div class="alert alert-info">No hay eventos registrados con los filtros seleccionados.</div>
+    <div class="catalog-empty">
+      <svg class="catalog-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+      <h2 class="catalog-empty__title">Sin resultados</h2>
+      <p class="catalog-empty__sub">No encontramos eventos con los filtros aplicados.</p>
+      <a href="{% url 'catalogo_eventos' %}" class="btn btn-dark">Ver todos los eventos</a>
+    </div>
   {% endif %}
 
+  <!-- Pagination -->
   {% if is_paginated %}
-    <nav aria-label="Paginación">
-      <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.previous_page_number }}">
-              Anterior
-            </a>
-          </li>
-        {% endif %}
+    <nav class="pagination" aria-label="Paginación">
+      {% if page_obj.has_previous %}
+        <a class="page-link"
+           href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           aria-label="Página anterior">
+          &#8592;
+        </a>
+      {% else %}
+        <span class="page-link page-link--disabled" aria-hidden="true">&#8592;</span>
+      {% endif %}
 
-        {% for num in paginator.page_range %}
-          {% if num == page_obj.number %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-          {% elif num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
-            <li class="page-item">
-              <a class="page-link" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ num }}">{{ num }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.next_page_number }}">
-              Siguiente
-            </a>
-          </li>
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="page-link page-link--active" aria-current="page">{{ num }}</span>
+        {% elif num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+          <a class="page-link"
+             href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ num }}"
+             aria-label="Página {{ num }}">{{ num }}</a>
         {% endif %}
-      </ul>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="page-link"
+           href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.next_page_number }}"
+           aria-label="Página siguiente">
+          &#8594;
+        </a>
+      {% else %}
+        <span class="page-link page-link--disabled" aria-hidden="true">&#8594;</span>
+      {% endif %}
     </nav>
   {% endif %}
 </div>
 {% endblock %}
-

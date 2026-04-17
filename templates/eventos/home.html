@@ -1,18 +1,437 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Inicio - Eventos disponibles{% endblock %}
+{% block title %}VIBEPAS — Rock Music Events{% endblock %}
+
+{% block extra_css %}
+  /* ========================
+     HOME PAGE
+     ======================== */
+
+  /* Hero section */
+  .hero {
+    background: var(--clr-dark);
+    position: relative;
+    overflow: hidden;
+    padding: var(--sp-8) 0 var(--sp-9);
+  }
+
+  /* Decorative scratch-mark lines */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        -55deg,
+        oklch(100% 0 0 / 0.012) 0px,
+        oklch(100% 0 0 / 0.012) 1px,
+        transparent 1px,
+        transparent 28px
+      );
+    pointer-events: none;
+  }
+
+  .hero__inner {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .hero__inner {
+      padding: 0 var(--sp-6);
+      min-height: 560px;
+    }
+  }
+
+  .hero__text { position: relative; z-index: 2; max-width: 700px; }
+  .hero__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    display: block;
+    margin-bottom: var(--sp-4);
+  }
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 11vw, 8rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+    color: oklch(94% 0.022 65);
+    margin-bottom: var(--sp-5);
+  }
+  .hero__title em {
+    font-style: italic;
+    color: var(--clr-gold);
+  }
+  .hero__sub {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: oklch(52% 0.012 65);
+    max-width: 45ch;
+    margin-bottom: var(--sp-6);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+
+  /* Logo as decorative background element */
+  .hero__logo-wrap {
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .hero__logo-wrap img {
+    width: clamp(340px, 48vw, 620px);
+    height: auto;
+    opacity: 0.13;
+    filter: drop-shadow(0 0 48px oklch(72% 0.13 75 / 0.4));
+  }
+  @media (min-width: 900px) {
+    .hero__logo-wrap {
+      right: -40px;
+      opacity: 1;
+    }
+    .hero__logo-wrap img {
+      opacity: 0.18;
+    }
+  }
+
+  /* Ticker band */
+  .ticker-band {
+    background: var(--clr-gold);
+    overflow: hidden;
+    padding: var(--sp-2) 0;
+    white-space: nowrap;
+    border-top: 2px solid oklch(65% 0.14 75);
+    border-bottom: 2px solid oklch(65% 0.14 75);
+  }
+  .ticker-band__track {
+    display: inline-flex;
+    gap: var(--sp-5);
+    animation: ticker 28s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-band__track { animation: none; }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .ticker-band__item {
+    font-family: var(--font-display);
+    font-size: 0.70rem;
+    font-weight: 800;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+  }
+  .ticker-band__dot {
+    color: var(--clr-dark-2);
+    opacity: 0.5;
+  }
+
+  /* Upcoming shows section */
+  .upcoming {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--sp-7) var(--sp-5);
+  }
+  @media (min-width: 768px) {
+    .upcoming { padding: var(--sp-7) var(--sp-6); }
+  }
+
+  .upcoming__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+    flex-wrap: wrap;
+  }
+  .upcoming__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    display: block;
+    margin-bottom: var(--sp-2);
+  }
+  .upcoming__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    line-height: 0.95;
+  }
+
+  /* Event card (home version) */
+  .event-card {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 5px 5px 0 var(--clr-border);
+  }
+  .event-card__img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+  }
+  .event-card__img-placeholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--clr-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .event-card__img-placeholder svg {
+    width: 44px; height: 44px;
+    color: var(--clr-gold);
+    opacity: 0.30;
+  }
+  .event-card__body {
+    padding: var(--sp-4);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+  .event-card__cat { align-self: flex-start; }
+  .event-card__name {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--clr-dark);
+    line-height: 1.1;
+    flex: 1;
+  }
+
+  /* Perforation */
+  .event-card__perf {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .event-card__perf::before,
+  .event-card__perf::after {
+    content: '';
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    margin: 0 -8px;
+    z-index: 1;
+  }
+  .event-card__perf-line {
+    flex: 1;
+    border-top: 2px dashed oklch(55% 0.01 65);
+  }
+
+  .event-card__footer {
+    padding: var(--sp-3) var(--sp-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .event-card__date {
+    font-family: var(--font-display);
+    font-size: 0.70rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    line-height: 1.4;
+  }
+
+  /* CTA band at bottom */
+  .cta-band {
+    background: var(--clr-dark);
+    padding: var(--sp-7) var(--sp-5);
+    text-align: center;
+    border-top: 3px solid var(--clr-gold);
+  }
+  .cta-band__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 3rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    margin-bottom: var(--sp-3);
+    line-height: 0.95;
+  }
+  .cta-band__sub {
+    font-size: 0.9rem;
+    color: oklch(50% 0.012 65);
+    margin-bottom: var(--sp-5);
+  }
+
+  /* Empty state */
+  .home-empty {
+    text-align: center;
+    padding: var(--sp-8) 0;
+    color: var(--clr-muted);
+    font-size: 0.92rem;
+  }
+{% endblock %}
 
 {% block content %}
-<h1>Eventos disponibles</h1>
-
-{% for evento in eventos %}
-    <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; border-radius:6px;">
-        <h3><a href="{% url 'detalle_evento' evento.id %}">{{ evento.nombre }}</a></h3>
-        <p>📅 {{ evento.fecha }} — 🕐 {{ evento.hora }}</p>
-        <p>📍 {{ evento.lugar.nombre }}, {{ evento.lugar.ciudad }}</p>
-        <p>🏷️ {{ evento.categoria.nombre }}</p>
+<!-- Hero -->
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__text">
+      <span class="hero__eyebrow">&#9733; Acceso al backstage &#9733;</span>
+      <h1 class="hero__title">
+        VIBEPAS<br>
+        <em>Rock</em><br>
+        Events
+      </h1>
+      <p class="hero__sub">
+        Los mejores shows de rock en vivo. Conseguí tu pase antes de que se agoten.
+      </p>
+      <div class="hero__actions">
+        <a href="{% url 'catalogo_eventos' %}" class="btn btn-gold btn-lg">Ver todos los eventos</a>
+        {% if not user.is_authenticated %}
+          <a href="{% url 'login' %}" class="btn btn-ghost btn-lg">Ingresar</a>
+        {% else %}
+          <a href="{% url 'mis_reservas' %}" class="btn btn-ghost btn-lg">Mis pases</a>
+        {% endif %}
+      </div>
     </div>
-{% empty %}
-    <p>No hay eventos registrados aún.</p>
-{% endfor %}
+
+    <div class="hero__logo-wrap" aria-hidden="true">
+      <img src="{% static 'img/vibepas_logo.png' %}" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- Ticker band -->
+<div class="ticker-band" aria-hidden="true">
+  <div class="ticker-band__track">
+    <span class="ticker-band__item">Rock en vivo</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Pases exclusivos</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Shows nacionales</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Acceso backstage</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Metal &amp; Punk</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Heavy Rock</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <!-- Duplicate for seamless loop -->
+    <span class="ticker-band__item">Rock en vivo</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Pases exclusivos</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Shows nacionales</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Acceso backstage</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Metal &amp; Punk</span>
+    <span class="ticker-band__dot">&#9679;</span>
+    <span class="ticker-band__item">Heavy Rock</span>
+    <span class="ticker-band__dot">&#9679;</span>
+  </div>
+</div>
+
+<!-- Upcoming events -->
+<section class="upcoming">
+  <div class="upcoming__header">
+    <div>
+      <span class="upcoming__eyebrow">Próximos shows</span>
+      <h2 class="upcoming__title">Live Circuits</h2>
+    </div>
+    <a href="{% url 'catalogo_eventos' %}" class="btn btn-outline-dark btn-sm">
+      Ver catálogo completo
+    </a>
+  </div>
+
+  {% if eventos %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-5);">
+      {% for evento in eventos %}
+        <a href="{% url 'detalle_evento' evento.id %}" class="event-card" aria-label="{{ evento.nombre }}">
+          {% if evento.imagen %}
+            <img class="event-card__img" src="{{ evento.imagen.url }}" alt="{{ evento.nombre }}" loading="lazy">
+          {% else %}
+            <div class="event-card__img-placeholder" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+              </svg>
+            </div>
+          {% endif %}
+
+          <div class="event-card__body">
+            <div class="event-card__cat">
+              <span class="badge badge-dark">{{ evento.categoria.nombre }}</span>
+            </div>
+            <h3 class="event-card__name">{{ evento.nombre }}</h3>
+          </div>
+
+          <div class="event-card__perf">
+            <div class="event-card__perf-line"></div>
+          </div>
+
+          <div class="event-card__footer">
+            <div class="event-card__date">
+              {{ evento.fecha }}<br>
+              {{ evento.lugar.nombre }}, {{ evento.lugar.ciudad }}
+            </div>
+            <span class="btn btn-gold btn-sm" aria-hidden="true">Pase</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="home-empty">
+      No hay eventos disponibles por ahora. Vuelve pronto.
+    </div>
+  {% endif %}
+</section>
+
+<!-- CTA band -->
+<div class="cta-band">
+  <h2 class="cta-band__title">No te pierdas el próximo show</h2>
+  <p class="cta-band__sub">Disponibilidad limitada. Sin fila, sin drama.</p>
+  <a href="{% url 'catalogo_eventos' %}" class="btn btn-gold btn-lg">
+    Ver todos los eventos
+  </a>
+</div>
 {% endblock %}

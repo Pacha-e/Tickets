@@ -12,6 +12,7 @@ urlpatterns = [
     ), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
 
+    path('', include('apps.usuarios.urls')),
     path('', include('apps.eventos.urls')),
     path('reservas/', include('apps.reservas.urls')),
     path('pagos/', include('apps.pagos.urls')),

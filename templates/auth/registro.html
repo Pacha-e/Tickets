@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Ingresar — VIBEPAS{% endblock %}
+{% block title %}Crear cuenta — VIBEPAS{% endblock %}
 
 {% block extra_css %}
   .login-wrap {
@@ -31,11 +31,7 @@
     margin-bottom: var(--sp-6);
     text-align: center;
   }
-
-  .login-card__logo img {
-    width: 80px;
-    height: auto;
-  }
+  .login-card__logo img { width: 72px; height: auto; }
 
   .login-card__title {
     font-family: var(--font-display);
@@ -47,7 +43,6 @@
     color: var(--clr-dark);
     line-height: 1;
   }
-
   .login-card__sub {
     font-size: 0.72rem;
     letter-spacing: 0.18em;
@@ -62,12 +57,8 @@
     gap: var(--sp-3);
     margin-bottom: var(--sp-5);
   }
-  .login-divider::before,
-  .login-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--clr-cream-dark);
+  .login-divider::before, .login-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--clr-cream-dark);
   }
   .login-divider__text {
     font-family: var(--font-display);
@@ -95,7 +86,6 @@
   }
   .login-footer a:hover { color: var(--clr-gold); }
 
-  /* Style Django's default form widgets */
   .login-form input {
     width: 100%;
     padding: var(--sp-3) var(--sp-4);
@@ -121,9 +111,9 @@
   .login-form .helptext {
     font-size: 0.75rem;
     color: var(--clr-muted);
+    line-height: 1.5;
   }
 
-  /* Manually styled field rows */
   .login-field { display: flex; flex-direction: column; gap: var(--sp-2); }
   .login-label {
     font-family: var(--font-display);
@@ -134,7 +124,6 @@
     color: var(--clr-muted);
   }
 
-  /* The band decoration at the very top */
   .login-top-band {
     display: flex;
     align-items: center;
@@ -158,7 +147,7 @@
 <div class="login-wrap">
   <div class="login-card">
     <div class="login-top-band">
-      <span>&#9733; Acceso Exclusivo &#9733;</span>
+      <span>&#9733; Únete al backstage &#9733;</span>
     </div>
 
     <div class="login-card__logo">
@@ -171,7 +160,7 @@
     </div>
 
     <div class="login-divider">
-      <span class="login-divider__text">Ingresa al backstage</span>
+      <span class="login-divider__text">Crea tu cuenta</span>
     </div>
 
     <form class="login-form" method="post" novalidate>
@@ -179,9 +168,7 @@
 
       {% if form.non_field_errors %}
         <div class="msg error" role="alert">
-          {% for error in form.non_field_errors %}
-            <span>{{ error }}</span>
-          {% endfor %}
+          {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
         </div>
       {% endif %}
 
@@ -193,25 +180,41 @@
         {% if form.username.errors %}
           <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
-      </div>
-
-      <div class="login-field">
-        <label class="login-label" for="{{ form.password.id_for_label }}">
-          {{ form.password.label }}
-        </label>
-        {{ form.password }}
-        {% if form.password.errors %}
-          <ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% if form.username.help_text %}
+          <span class="helptext">{{ form.username.help_text }}</span>
         {% endif %}
       </div>
 
-      <button type="submit" class="btn btn-dark btn-lg btn-full" style="margin-top: var(--sp-2);">
-        Ingresar
+      <div class="login-field">
+        <label class="login-label" for="{{ form.password1.id_for_label }}">
+          {{ form.password1.label }}
+        </label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if form.password1.help_text %}
+          <span class="helptext">{{ form.password1.help_text }}</span>
+        {% endif %}
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="{{ form.password2.id_for_label }}">
+          {{ form.password2.label }}
+        </label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-lg btn-full" style="margin-top: var(--sp-2);">
+        Crear cuenta
       </button>
     </form>
 
     <div class="login-footer">
-      ¿No tenés cuenta? <a href="{% url 'registro' %}">Registrate gratis</a>
+      ¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá sesión</a>
     </div>
   </div>
 </div>

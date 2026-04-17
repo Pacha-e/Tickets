@@ -37,8 +37,7 @@ def crear_reserva(request, evento_id):
             tipo.cantidad_disponible -= reserva.cantidad
             tipo.save()
 
-            messages.success(request, 'Reserva creada exitosamente.')
-            return redirect('mis_reservas')
+            return redirect('confirmacion_reserva', reserva_id=reserva.pk)
     else:
         # Pre-seleccionar tipo si viene por querystring (?tipo=<id>)
         initial = {}
@@ -51,7 +50,20 @@ def crear_reserva(request, evento_id):
 
 
 @login_required
+def confirmacion_reserva(request, reserva_id):
+    reserva = get_object_or_404(
+        Reserva.objects.select_related('evento', 'tipo_ticket', 'evento__lugar'),
+        pk=reserva_id,
+        usuario=request.user,
+    )
+    return render(request, 'reservas/confirmacion_reserva.html', {'reserva': reserva})
+
+
+@login_required
 def cancelar_reserva(request, reserva_id):
+    if request.method != 'POST':
+        return redirect('mis_reservas')
+
     reserva = get_object_or_404(Reserva, pk=reserva_id, usuario=request.user)
 
     if reserva.estado == 'pendiente':
@@ -62,8 +74,8 @@ def cancelar_reserva(request, reserva_id):
 
         reserva.estado = 'cancelada'
         reserva.save()
-        messages.success(request, 'Reserva cancelada.')
+        messages.success(request, 'Pase cancelado correctamente.')
     else:
-        messages.warning(request, 'Solo se pueden cancelar reservas en estado pendiente.')
+        messages.warning(request, 'Solo se pueden cancelar pases en estado pendiente.')
 
     return redirect('mis_reservas')

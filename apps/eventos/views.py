@@ -54,6 +54,8 @@ class HomeView(EventoListView):
     """
     Mantiene el nombre `home` por compatibilidad con la navbar.
     """
+    template_name = 'eventos/home.html'
+    paginate_by = 6
 
 
 class EventoDetailView(DetailView):

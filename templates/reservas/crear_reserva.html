@@ -1,15 +1,228 @@
 {% extends 'base.html' %}
 
-{% block title %}Crear reserva — {{ evento.nombre }}{% endblock %}
+{% block title %}Reservar — {{ evento.nombre }} — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+  /* ========================
+     CREAR RESERVA PAGE
+     ======================== */
+  .booking-hero {
+    background: var(--clr-dark);
+    padding: var(--sp-6) 0;
+  }
+  .booking-hero__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+  }
+  @media (min-width: 768px) {
+    .booking-hero__inner { padding: 0 var(--sp-6); }
+  }
+  .booking-hero__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.60rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    display: block;
+    margin-bottom: var(--sp-3);
+  }
+  .booking-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    line-height: 0.95;
+    margin-bottom: var(--sp-4);
+  }
+  .booking-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+  }
+  .booking-hero__meta-item {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: oklch(55% 0.015 65);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+  .booking-hero__meta-item svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--clr-gold);
+  }
+
+  /* Booking form area */
+  .booking-wrap {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: var(--sp-7) var(--sp-5);
+  }
+  @media (min-width: 768px) {
+    .booking-wrap { padding: var(--sp-7) var(--sp-6); }
+  }
+
+  .booking-card {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    padding: var(--sp-6);
+  }
+
+  .booking-card__title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--clr-dark);
+    margin-bottom: var(--sp-5);
+    padding-bottom: var(--sp-4);
+    border-bottom: 1px solid var(--clr-cream-dark);
+  }
+
+  .booking-form { display: flex; flex-direction: column; gap: var(--sp-5); }
+
+  /* Style Django's default select + number widgets inside form */
+  .booking-form select,
+  .booking-form input[type="number"] {
+    width: 100%;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-cream-dark);
+    color: var(--clr-text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color var(--t-fast);
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  .booking-form select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+  .booking-form select:focus,
+  .booking-form input[type="number"]:focus { border-color: var(--clr-gold); }
+
+  .booking-form .errorlist {
+    list-style: none;
+    color: var(--clr-red);
+    font-size: 0.80rem;
+    font-weight: 600;
+    margin-top: var(--sp-1);
+  }
+
+  .booking-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-top: var(--sp-2);
+  }
+  @media (min-width: 480px) {
+    .booking-actions { flex-direction: row; }
+    .booking-actions .btn-full { flex: 1; }
+  }
+
+  .booking-note {
+    margin-top: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--clr-gold-light);
+    border: 1px solid var(--clr-cream-dark);
+    font-size: 0.80rem;
+    color: var(--clr-dark);
+    line-height: 1.6;
+  }
+{% endblock %}
 
 {% block content %}
-<h1>Reservar: {{ evento.nombre }}</h1>
-<p>📅 {{ evento.fecha }} — 📍 {{ evento.lugar.nombre }}</p>
+<!-- Event header -->
+<section class="booking-hero">
+  <div class="booking-hero__inner">
+    <span class="booking-hero__eyebrow">&#9733; Confirma tu pase &#9733;</span>
+    <h1 class="booking-hero__title">{{ evento.nombre }}</h1>
+    <div class="booking-hero__meta">
+      <span class="booking-hero__meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {{ evento.fecha }} — {{ evento.hora }}
+      </span>
+      <span class="booking-hero__meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        {{ evento.lugar.nombre }}, {{ evento.lugar.ciudad }}
+      </span>
+    </div>
+  </div>
+</section>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Confirmar reserva</button>
-    <a href="{% url 'detalle_evento' evento.id %}" style="margin-left:10px;">Cancelar</a>
-</form>
+<!-- Booking form -->
+<div class="booking-wrap">
+  <div class="booking-card">
+    <h2 class="booking-card__title">Selecciona tu pase</h2>
+
+    <form class="booking-form" method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="msg error" role="alert">
+          {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- tipo_ticket -->
+      <div class="field">
+        <label class="field-label" for="{{ form.tipo_ticket.id_for_label }}">
+          {{ form.tipo_ticket.label }}
+        </label>
+        {{ form.tipo_ticket }}
+        {% if form.tipo_ticket.errors %}
+          <ul class="errorlist">{% for e in form.tipo_ticket.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- cantidad -->
+      <div class="field">
+        <label class="field-label" for="{{ form.cantidad.id_for_label }}">
+          {{ form.cantidad.label }}
+        </label>
+        {{ form.cantidad }}
+        {% if form.cantidad.errors %}
+          <ul class="errorlist">{% for e in form.cantidad.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="booking-actions">
+        <button type="submit" class="btn btn-gold btn-lg btn-full">
+          Confirmar pase
+        </button>
+        <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-ghost btn-lg">
+          Cancelar
+        </a>
+      </div>
+    </form>
+
+    <p class="booking-note">
+      Los pases quedan en estado <strong>Pendiente</strong> hasta que el organizador los confirme.
+      Puedes cancelar desde "Mis Pases" en cualquier momento.
+    </p>
+  </div>
+</div>
 {% endblock %}
