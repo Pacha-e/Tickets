@@ -1,3 +1,4 @@
+# Author: Juan José Baron Osorio
 from django.apps import AppConfig
 
 

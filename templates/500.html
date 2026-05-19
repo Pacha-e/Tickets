@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}500 — Error del servidor | VIBEPAS{% endblock %}
+
+{% block content %}
+<section style="
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--sp-9) var(--sp-5);
+  gap: var(--sp-5);
+">
+  <p class="t-hero" style="
+    font-size: clamp(6rem, 20vw, 12rem);
+    line-height: 1;
+    color: var(--clr-red);
+    opacity: 0.20;
+    margin: 0;
+  ">500</p>
+
+  <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+    <h1 class="t-xl" style="color: var(--clr-dark); margin: 0;">
+      {% trans "Error interno del servidor" %}
+    </h1>
+    <p class="t-md" style="color: var(--clr-muted); max-width: 480px; margin: 0;">
+      {% trans "Algo salió mal de nuestra parte. Estamos trabajando en ello. Intenta de nuevo en unos minutos." %}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: center;">
+    <a href="{% url 'home' %}" class="btn btn-gold btn-lg">{% trans "Volver al inicio" %}</a>
+  </div>
+</section>
+{% endblock %}

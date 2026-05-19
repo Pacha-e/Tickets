@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pase Confirmado — VIBEPAS</title>
+  <style>
+    body { margin: 0; padding: 0; background: #F5F0DF; font-family: Arial, sans-serif; color: #1A1610; }
+    .wrapper { max-width: 560px; margin: 32px auto; background: #FAF7F0; border: 1px solid #E5DEC8; border-radius: 8px; overflow: hidden; }
+    .header { background: #2C0A02; padding: 32px 24px; text-align: center; }
+    .header h1 { margin: 0; color: #C9A227; font-size: 28px; letter-spacing: 1px; }
+    .header p { margin: 8px 0 0; color: #F5F0DF; font-size: 14px; }
+    .body { padding: 32px 24px; }
+    .greeting { font-size: 18px; font-weight: bold; margin: 0 0 16px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #E5DEC8; font-size: 15px; }
+    .detail-row:last-child { border-bottom: none; }
+    .label { color: #5C564A; }
+    .value { font-weight: bold; }
+    .cta { text-align: center; margin: 28px 0 0; }
+    .btn { display: inline-block; background: #C9A227; color: #2C0A02; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px; }
+    .footer { background: #2C0A02; padding: 20px 24px; text-align: center; color: #5C564A; font-size: 13px; }
+    .footer span { color: #C9A227; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>VIBEPAS</h1>
+      <p>Rock Music Events</p>
+    </div>
+    <div class="body">
+      <p class="greeting">¡Hola, {{ reserva.usuario.username }}!</p>
+      <p>Tu pago fue aprobado y tu pase está confirmado. ¡Nos vemos en el show!</p>
+
+      <div style="margin-top: 24px;">
+        <div class="detail-row">
+          <span class="label">Evento</span>
+          <span class="value">{{ reserva.evento.nombre }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Fecha</span>
+          <span class="value">{{ reserva.evento.fecha }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Lugar</span>
+          <span class="value">{{ reserva.evento.lugar.nombre }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Tipo de pase</span>
+          <span class="value">{{ reserva.tipo_ticket.nombre }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Cantidad</span>
+          <span class="value">{{ reserva.cantidad }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Monto pagado</span>
+          <span class="value">${{ pago.monto }}</span>
+        </div>
+      </div>
+
+      <div class="cta">
+        <a href="#" class="btn">Ver mis pases</a>
+      </div>
+    </div>
+    <div class="footer">
+      <span>VIBEPAS</span> — Sin reembolsos. A todo volumen.
+    </div>
+  </div>
+</body>
+</html>

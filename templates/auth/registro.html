@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear cuenta — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .login-wrap {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-5);
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, oklch(22% 0.06 22), transparent),
+      var(--clr-bg);
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    padding: var(--sp-7) var(--sp-6);
+    position: relative;
+  }
+
+  .login-card__logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-6);
+    text-align: center;
+  }
+  .login-card__logo img { width: 72px; height: auto; }
+
+  .login-card__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    line-height: 1;
+  }
+  .login-card__sub {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    margin-top: var(--sp-1);
+  }
+
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+  }
+  .login-divider::before, .login-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--clr-cream-dark);
+  }
+  .login-divider__text {
+    font-family: var(--font-display);
+    font-size: 0.60rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    white-space: nowrap;
+  }
+
+  .login-form { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+  .login-footer {
+    margin-top: var(--sp-5);
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--clr-muted);
+  }
+  .login-footer a {
+    color: var(--clr-dark);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .login-footer a:hover { color: var(--clr-gold); }
+
+  .login-form input {
+    width: 100%;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-cream-dark);
+    color: var(--clr-text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color var(--t-fast);
+    border-radius: 0;
+  }
+  .login-form input:focus { border-color: var(--clr-gold); }
+  .login-form input::placeholder { color: oklch(65% 0.01 65); }
+
+  .login-form .errorlist li {
+    font-size: 0.80rem;
+    color: var(--clr-red);
+    font-weight: 600;
+    list-style: none;
+    margin-top: var(--sp-1);
+  }
+  .login-form .helptext {
+    font-size: 0.75rem;
+    color: var(--clr-muted);
+    line-height: 1.5;
+  }
+
+  .login-field { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .login-label {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+  }
+
+  .login-top-band {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+    background: var(--clr-gold);
+    margin: calc(-1 * var(--sp-7)) calc(-1 * var(--sp-6)) var(--sp-6);
+  }
+  .login-top-band span {
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-top-band">
+      <span>&#9733; Únete al backstage &#9733;</span>
+    </div>
+
+    <div class="login-card__logo">
+      {% load static %}
+      <img src="{% static 'img/vibepas_logo.png' %}" alt="VIBEPAS logo">
+      <div>
+        <div class="login-card__title">VIBEPAS</div>
+        <div class="login-card__sub">Rock Music Events</div>
+      </div>
+    </div>
+
+    <div class="login-divider">
+      <span class="login-divider__text">Crea tu cuenta</span>
+    </div>
+
+    <form class="login-form" method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="msg error" role="alert">
+          {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="login-field">
+        <label class="login-label" for="{{ form.username.id_for_label }}">
+          {{ form.username.label }}
+        </label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if form.username.help_text %}
+          <span class="helptext">{{ form.username.help_text }}</span>
+        {% endif %}
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="{{ form.password1.id_for_label }}">
+          {{ form.password1.label }}
+        </label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if form.password1.help_text %}
+          <span class="helptext">{{ form.password1.help_text }}</span>
+        {% endif %}
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="{{ form.password2.id_for_label }}">
+          {{ form.password2.label }}
+        </label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-lg btn-full" style="margin-top: var(--sp-2);">
+        Crear cuenta
+      </button>
+    </form>
+
+    <div class="login-footer">
+      ¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá sesión</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

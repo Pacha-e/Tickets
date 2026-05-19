@@ -1,0 +1,17 @@
+VIBEPAS — Reserva Cancelada
+============================
+
+Hola, {{ reserva.usuario.username }}.
+
+Tu reserva ha sido cancelada. La disponibilidad del pase ha sido restaurada.
+
+Detalles:
+  Evento:       {{ reserva.evento.nombre }}
+  Fecha:        {{ reserva.evento.fecha }}
+  Tipo de pase: {{ reserva.tipo_ticket.nombre }}
+  Cantidad:     {{ reserva.cantidad }}
+
+Si fue un error, puedes volver a reservar desde la plataforma.
+
+— VIBEPAS
+Sin reembolsos. A todo volumen.

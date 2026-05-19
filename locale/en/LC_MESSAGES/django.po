@@ -1,0 +1,27 @@
+# English translations for VibePas
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Español"
+msgstr "Spanish"
+
+msgid "English"
+msgstr "English"
+
+msgid "Events"
+msgstr "Events"
+
+msgid "My Tickets"
+msgstr "My Tickets"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Register"
+msgstr "Register"
+
+msgid "Logout"
+msgstr "Logout"

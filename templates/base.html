@@ -1,51 +1,769 @@
 <!DOCTYPE html>
-<html lang="es">
+{% load i18n %}{% get_current_language as cur_lang %}<html lang="{{ cur_lang }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Tickets y Reservas{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        nav { background: #2c3e50; padding: 10px 20px; display: flex; gap: 15px; align-items: center; }
-        nav a { color: white; text-decoration: none; }
-        nav a:hover { text-decoration: underline; }
-        nav button { background: transparent; border: 1px solid white; color: white; padding: 4px 10px; cursor: pointer; border-radius: 4px; }
-        .messages { padding: 10px 20px; }
-        .messages p { background: #d4edda; border: 1px solid #c3e6cb; padding: 8px 12px; border-radius: 4px; }
-        main { padding: 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VIBEPAS — Rock Music Events{% endblock %}</title>
+  {% load static %}
+
+  <!-- SEO meta tags -->
+  <meta name="description" content="{% block meta_description %}VIBEPAS — Tu plataforma de tickets para eventos de rock en vivo. Encuentra los mejores conciertos y asegura tu lugar.{% endblock %}">
+
+  <!-- Open Graph -->
+  {% block og_tags %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="VIBEPAS">
+  <meta property="og:title" content="{% block og_title %}VIBEPAS — Rock Music Events{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Tu plataforma de tickets para eventos de rock en vivo.{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% endblock %}
+
+  <!-- Fonts: Barlow Condensed (display) + Barlow (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       VIBEPAS DESIGN SYSTEM
+       Colors from Stitch mockups — OKLCH for perceptual uniformity
+       ============================================================ */
+    :root {
+      /* Palette */
+      --clr-bg:          oklch(94%  0.022 65);   /* parchment cream  #F5F0DF */
+      --clr-surface:     oklch(97%  0.012 65);   /* card surface     #FAF7F0 */
+      --clr-cream-dark:  oklch(88%  0.025 65);   /* border/divider   #E5DEC8 */
+      --clr-dark:        oklch(13%  0.044 22);   /* deep maroon      #2C0A02 */
+      --clr-dark-2:      oklch(21%  0.052 22);   /* mid maroon       #4A1208 */
+      --clr-gold:        oklch(72%  0.130 75);   /* golden amber     #C9A227 */
+      --clr-gold-light:  oklch(88%  0.070 80);   /* pale gold tint   #F0E2A8 */
+      --clr-red:         oklch(33%  0.080 22);   /* dark red         #8B1A1A */
+      --clr-text:        oklch(12%  0.010 65);   /* near-black       #1A1610 */
+      --clr-muted:       oklch(42%  0.010 65);   /* muted text       #5C564A */
+      --clr-border:      oklch(18%  0.010 65);   /* card border      #2E2820 */
+      --clr-confirmed:   oklch(45%  0.12  145);  /* forest green     #2E7D32 */
+
+      /* Typography */
+      --font-display: 'Barlow Condensed', sans-serif;
+      --font-body:    'Barlow', sans-serif;
+
+      /* Spacing — 4pt scale */
+      --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+      --sp-5: 24px;  --sp-6: 32px;  --sp-7: 48px;  --sp-8: 64px;  --sp-9: 96px;
+
+      /* Z-index */
+      --z-nav: 100;  --z-overlay: 200;  --z-toast: 300;
+
+      /* Transitions */
+      --t-fast: 150ms ease-out;
+      --t-base: 250ms ease-out;
+    }
+
+    /* ========================
+       RESET
+       ======================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 72px; /* mobile bottom nav */
+    }
+    @media (min-width: 768px) { body { padding-bottom: 0; } }
+    img  { display: block; max-width: 100%; }
+    a    { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ul   { list-style: none; }
+
+    /* ========================
+       TYPOGRAPHY
+       ======================== */
+    h1,h2,h3,h4,h5 {
+      font-family: var(--font-display);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .t-hero  { font-size: clamp(2.8rem, 8vw, 6.5rem); font-weight: 900; font-style: italic; line-height: 0.95; }
+    .t-xl    { font-size: clamp(2rem,   5vw, 4rem);   font-weight: 900; }
+    .t-lg    { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 800; }
+    .t-md    { font-size: clamp(1.2rem, 2vw, 1.75rem); font-weight: 700; }
+    .t-sm    { font-size: 1.05rem; font-weight: 700; }
+    .t-label {
+      font-family: var(--font-display);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ========================
+       NAVBAR — desktop
+       ======================== */
+    .navbar {
+      background: var(--clr-dark);
+      padding: var(--sp-3) var(--sp-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: var(--z-nav);
+      border-bottom: 2px solid var(--clr-gold);
+      gap: var(--sp-5);
+    }
+
+    .navbar__logo {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      flex-shrink: 0;
+    }
+    .navbar__logo img { height: 44px; width: auto; }
+    .navbar__wordmark {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.55rem;
+      letter-spacing: 0.07em;
+      color: var(--clr-gold);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .navbar__wordmark span {
+      display: block;
+      font-size: 0.52rem;
+      letter-spacing: 0.20em;
+      color: oklch(60% 0.025 65);
+      font-weight: 600;
+    }
+
+    .navbar__links {
+      display: none;
+      align-items: center;
+      gap: var(--sp-5);
+    }
+    @media (min-width: 768px) { .navbar__links { display: flex; } }
+
+    .navbar__links a {
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: oklch(75% 0.015 65);
+      transition: color var(--t-fast);
+      padding: var(--sp-1) 0;
+      border-bottom: 2px solid transparent;
+    }
+    .navbar__links a:hover,
+    .navbar__links a.active {
+      color: var(--clr-gold);
+      border-bottom-color: var(--clr-gold);
+    }
+
+    .navbar__actions {
+      display: none;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+    @media (min-width: 768px) { .navbar__actions { display: flex; } }
+
+    .navbar__user {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      color: var(--clr-gold);
+      text-transform: uppercase;
+    }
+
+    /* ========================
+       BUTTONS
+       ======================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      font-family: var(--font-display);
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      padding: var(--sp-2) var(--sp-5);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+      white-space: nowrap;
+      font-size: 0.82rem;
+    }
+    .btn:focus-visible { outline: 3px solid var(--clr-gold); outline-offset: 2px; }
+
+    .btn-gold {
+      background: var(--clr-gold);
+      color: var(--clr-dark);
+      border-color: var(--clr-gold);
+    }
+    .btn-gold:hover { background: oklch(65% 0.14 75); border-color: oklch(65% 0.14 75); }
+
+    .btn-dark {
+      background: var(--clr-dark);
+      color: var(--clr-gold);
+      border-color: var(--clr-dark);
+    }
+    .btn-dark:hover { background: var(--clr-dark-2); border-color: var(--clr-dark-2); }
+
+    .btn-ghost {
+      background: transparent;
+      color: oklch(75% 0.015 65);
+      border-color: oklch(38% 0.02 65);
+    }
+    .btn-ghost:hover { border-color: var(--clr-gold); color: var(--clr-gold); }
+
+    .btn-outline-dark {
+      background: transparent;
+      color: var(--clr-text);
+      border-color: var(--clr-border);
+    }
+    .btn-outline-dark:hover { background: var(--clr-dark); color: var(--clr-gold); border-color: var(--clr-dark); }
+
+    .btn-lg { padding: var(--sp-3) var(--sp-7); font-size: 1rem; }
+    .btn-sm { padding: var(--sp-1) var(--sp-3); font-size: 0.72rem; }
+    .btn-full { width: 100%; }
+
+    /* ========================
+       BOTTOM NAV — mobile
+       ======================== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--clr-dark);
+      border-top: 2px solid var(--clr-gold);
+      display: flex;
+      z-index: var(--z-nav);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    @media (min-width: 768px) { .bottom-nav { display: none; } }
+
+    .bottom-nav__item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: var(--sp-2) var(--sp-1);
+      color: oklch(48% 0.02 65);
+      transition: color var(--t-fast);
+      touch-action: manipulation;
+      min-height: 56px;
+      justify-content: center;
+    }
+    .bottom-nav__item.active,
+    .bottom-nav__item:hover { color: var(--clr-gold); }
+    .bottom-nav__item svg { width: 22px; height: 22px; stroke-width: 1.8; flex-shrink: 0; }
+    .bottom-nav__label {
+      font-family: var(--font-display);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+    }
+
+    /* ========================
+       MESSAGES
+       ======================== */
+    .messages-wrap {
+      padding: var(--sp-3) var(--sp-5) 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .msg {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3) var(--sp-4);
+      border: 2px solid var(--clr-cream-dark);
+      background: var(--clr-surface);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .msg.success { border-color: var(--clr-gold); background: var(--clr-gold-light); }
+    .msg.error   { border-color: var(--clr-red); background: oklch(93% 0.018 22); }
+    .msg.warning { border-color: oklch(72% 0.14 62); background: oklch(95% 0.025 65); }
+
+    /* ========================
+       LAYOUT
+       ======================== */
+    main { flex: 1; }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--sp-5);
+    }
+    @media (min-width: 768px) { .container { padding: 0 var(--sp-6); } }
+
+    /* ========================
+       TICKET CARD COMPONENT
+       ======================== */
+    .ticket-card {
+      background: var(--clr-surface);
+      border: 2px solid var(--clr-border);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform var(--t-fast), box-shadow var(--t-fast);
+      cursor: pointer;
+    }
+    .ticket-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 4px 4px 0 var(--clr-border);
+    }
+    .ticket-card__img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+    }
+    .ticket-card__img-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--clr-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ticket-card__img-placeholder svg { width: 48px; height: 48px; color: var(--clr-gold); opacity: 0.4; }
+    .ticket-card__body { padding: var(--sp-4); flex: 1; display: flex; flex-direction: column; }
+
+    /* Perforated divider */
+    .perforation {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: 0 0;
+      overflow: hidden;
+    }
+    .perforation::before,
+    .perforation::after {
+      content: '';
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--clr-bg);
+      border: 2px solid var(--clr-border);
+      flex-shrink: 0;
+      margin: 0 -9px;
+      z-index: 1;
+    }
+    .perforation__line {
+      flex: 1;
+      border-top: 2px dashed oklch(55% 0.01 65);
+      margin: 0 var(--sp-3);
+    }
+    .ticket-card__footer { padding: var(--sp-3) var(--sp-4); }
+
+    /* ========================
+       BADGES
+       ======================== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px var(--sp-2);
+      font-family: var(--font-display);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: 1.5px solid currentColor;
+      white-space: nowrap;
+    }
+    .badge-gold    { color: var(--clr-dark); background: var(--clr-gold); border-color: var(--clr-gold); }
+    .badge-dark    { color: var(--clr-gold); background: var(--clr-dark); border-color: var(--clr-dark); }
+    .badge-red     { color: #fff; background: var(--clr-red); border-color: var(--clr-red); }
+    .badge-outline { color: var(--clr-muted); background: transparent; border-color: var(--clr-cream-dark); }
+    .badge-confirmed { color: #fff; background: var(--clr-confirmed); border-color: var(--clr-confirmed); }
+    .badge-pending   { color: #fff; background: var(--clr-red); border-color: var(--clr-red); }
+    .badge-cancelled { color: oklch(38% 0.01 65); background: oklch(85% 0.008 65); border-color: oklch(62% 0.01 65); }
+
+    /* Cancellation stamp */
+    .stamp-cancelled {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-14deg);
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.10em;
+      color: var(--clr-red);
+      border: 4px solid var(--clr-red);
+      padding: 4px 18px;
+      opacity: 0.30;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 2;
+      text-transform: uppercase;
+    }
+
+    /* ========================
+       FORMS
+       ======================== */
+    .field { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+    .field-label {
+      font-family: var(--font-display);
+      font-size: 0.70rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--clr-muted);
+    }
+
+    .field-input {
+      width: 100%;
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--clr-surface);
+      border: 2px solid var(--clr-cream-dark);
+      color: var(--clr-text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color var(--t-fast);
+      appearance: none;
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+    .field-input:focus { border-color: var(--clr-gold); }
+    .field-input::placeholder { color: oklch(65% 0.01 65); }
+
+    select.field-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 18px;
+      padding-right: 40px;
+    }
+
+    .errorlist {
+      list-style: none;
+      color: var(--clr-red);
+      font-size: 0.80rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* ========================
+       SECTION HEADERS
+       ======================== */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: var(--sp-6) 0 var(--sp-5);
+      gap: var(--sp-4);
+    }
+    .section-header__eyebrow {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clr-gold);
+      display: block;
+      margin-bottom: var(--sp-1);
+    }
+
+    /* ========================
+       STRIP / BAND
+       ======================== */
+    .band {
+      background: var(--clr-dark);
+      color: oklch(80% 0.015 65);
+      padding: var(--sp-4) var(--sp-6);
+      overflow: hidden;
+    }
+    .band--gold {
+      background: var(--clr-gold);
+      color: var(--clr-dark);
+    }
+
+    /* ========================
+       FOOTER
+       ======================== */
+    .footer {
+      background: var(--clr-dark);
+      color: oklch(55% 0.012 65);
+      padding: var(--sp-7) var(--sp-6) var(--sp-5);
+      margin-top: var(--sp-9);
+    }
+    .footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--sp-6);
+    }
+    @media (min-width: 768px) {
+      .footer__inner { grid-template-columns: 2fr 1fr 1fr; }
+    }
+    .footer__brand { display: flex; align-items: flex-start; gap: var(--sp-3); }
+    .footer__brand img { height: 52px; width: auto; }
+    .footer__brand-name {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--clr-gold);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .footer__brand-sub {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: oklch(45% 0.01 65);
+      margin-top: 3px;
+    }
+    .footer__blurb {
+      font-size: 0.82rem;
+      margin-top: var(--sp-4);
+      max-width: 280px;
+      line-height: 1.7;
+      color: oklch(48% 0.01 65);
+    }
+    .footer__col-title {
+      font-family: var(--font-display);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: oklch(68% 0.015 65);
+      margin-bottom: var(--sp-3);
+    }
+    .footer__links { display: flex; flex-direction: column; gap: var(--sp-2); }
+    .footer__links a {
+      font-size: 0.84rem;
+      color: oklch(50% 0.01 65);
+      transition: color var(--t-fast);
+    }
+    .footer__links a:hover { color: var(--clr-gold); }
+    .footer__bottom {
+      max-width: 1200px;
+      margin: var(--sp-6) auto 0;
+      padding-top: var(--sp-4);
+      border-top: 1px solid oklch(22% 0.02 22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--sp-3);
+      font-size: 0.72rem;
+      color: oklch(40% 0.01 65);
+      letter-spacing: 0.04em;
+    }
+
+    /* ========================
+       UTILITIES
+       ======================== */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .text-gold  { color: var(--clr-gold) !important; }
+    .text-muted { color: var(--clr-muted) !important; }
+    .text-red   { color: var(--clr-red) !important; }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--sp-5);
+    }
+
+    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .flex-center  { display: flex; align-items: center; justify-content: center; }
+    .flex-gap-3   { display: flex; align-items: center; gap: var(--sp-3); }
+
+    .mt-4 { margin-top: var(--sp-4); }
+    .mt-5 { margin-top: var(--sp-5); }
+    .mt-6 { margin-top: var(--sp-6); }
+    .mt-7 { margin-top: var(--sp-7); }
+    .mb-4 { margin-bottom: var(--sp-4); }
+    .mb-5 { margin-bottom: var(--sp-5); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+
+    /* Django template extra CSS block moved outside to fix IDE expected `{` lint error */
+  </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav>
-        <a href="{% url 'home' %}">Inicio</a>
+  <!-- ===================== NAVBAR ===================== -->
+  {% load static %}
+  <header class="navbar">
+    <a href="{% url 'home' %}" class="navbar__logo" aria-label="VIBEPAS — Inicio">
+      <img src="{% static 'img/vibepas_logo.png' %}" alt="VIBEPAS logo" width="44" height="44">
+      <div class="navbar__wordmark">
+        VIBEPAS
+        <span>Rock Music Events</span>
+      </div>
+    </a>
 
-        {% if user.is_authenticated %}
-            <a href="{% url 'mis_reservas' %}">Mis reservas</a>
-
-            {% if user.is_staff %}
-                <a href="/admin/">Administración</a>
-            {% endif %}
-
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Cerrar sesión ({{ user.username }})</button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}">Iniciar sesión</a>
-        {% endif %}
+    <nav class="navbar__links" aria-label="Navegación principal">
+      <a href="{% url 'home' %}"
+         {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Inicio</a>
+      <a href="{% url 'catalogo_eventos' %}"
+         {% if request.resolver_match.url_name == 'catalogo_eventos' %}class="active"{% endif %}>Eventos</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'mis_reservas' %}"
+           {% if request.resolver_match.url_name == 'mis_reservas' %}class="active"{% endif %}>Mis Pases</a>
+      {% endif %}
+      {% if user.is_staff %}
+        <a href="/admin/">Admin</a>
+      {% endif %}
     </nav>
 
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <p class="{{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <div class="navbar__actions">
+      {% include "partials/language_switcher.html" %}
+      {% if user.is_authenticated %}
+        <span class="navbar__user">{{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost">Salir</button>
+        </form>
+      {% else %}
+        <a href="{% url 'registro' %}" class="btn btn-ghost">Registrarse</a>
+        <a href="{% url 'login' %}" class="btn btn-gold">Ingresar</a>
+      {% endif %}
+    </div>
+  </header>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+  <!-- ===================== MESSAGES ===================== -->
+  {% if messages %}
+    <div class="messages-wrap">
+      {% for message in messages %}
+        <div class="msg {{ message.tags }}" role="alert">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- ===================== CONTENT ===================== -->
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer" aria-label="Pie de página">
+    <div class="footer__inner">
+      <div>
+        <div class="footer__brand">
+          <img src="{% static 'img/vibepas_logo.png' %}" alt="VIBEPAS logo" width="52">
+          <div>
+            <div class="footer__brand-name">VIBEPAS</div>
+            <div class="footer__brand-sub">Rock Music Events</div>
+          </div>
+        </div>
+        <p class="footer__blurb">
+          Acceso exclusivo a los mejores shows de rock. Sin compromisos, sin filtros.
+        </p>
+      </div>
+
+      <div>
+        <div class="footer__col-title">Explorar</div>
+        <ul class="footer__links">
+          <li><a href="{% url 'home' %}">Inicio</a></li>
+          <li><a href="{% url 'catalogo_eventos' %}">Catálogo</a></li>
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'mis_reservas' %}">Mis Pases</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer__col-title">Legal</div>
+        <ul class="footer__links">
+          <li><a href="#">Términos de servicio</a></li>
+          <li><a href="#">Privacidad</a></li>
+          <li><a href="#">Soporte</a></li>
+          <li><a href="#">Portal de artistas</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© 2024 VIBEPAS. Sin reembolsos. A todo volumen.</span>
+      <span class="t-label">Backstage Pass</span>
+    </div>
+  </footer>
+
+  <!-- ===================== MOBILE BOTTOM NAV ===================== -->
+  <nav class="bottom-nav" aria-label="Navegación móvil">
+    <a href="{% url 'home' %}"
+       class="bottom-nav__item{% if request.resolver_match.url_name == 'home' %} active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="bottom-nav__label">Inicio</span>
+    </a>
+
+    <a href="{% url 'catalogo_eventos' %}"
+       class="bottom-nav__item{% if request.resolver_match.url_name == 'catalogo_eventos' %} active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <span class="bottom-nav__label">Eventos</span>
+    </a>
+
+    <a href="{% if user.is_authenticated %}{% url 'mis_reservas' %}{% else %}{% url 'login' %}{% endif %}"
+       class="bottom-nav__item{% if request.resolver_match.url_name == 'mis_reservas' %} active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M20 12V22H4V12"/>
+        <path d="M22 7H2v5h20V7z"/>
+        <path d="M12 22V7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+      </svg>
+      <span class="bottom-nav__label">Pases</span>
+    </a>
+
+    <a href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
+       class="bottom-nav__item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="bottom-nav__label">{% if user.is_authenticated %}{{ user.username|slice:":8" }}{% else %}Perfil{% endif %}</span>
+    </a>
+  </nav>
+
+  {% block extra_js %}{% endblock %}
+  <script>
+    // Auto-dismiss messages after 4 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+      const messages = document.querySelectorAll('.msg');
+      messages.forEach(msg => {
+        setTimeout(() => {
+          msg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          msg.style.opacity = '0';
+          msg.style.transform = 'translateY(-10px)';
+          setTimeout(() => msg.remove(), 400); // Wait for transition
+        }, 4000);
+      });
+    });
+  </script>
 </body>
 </html>

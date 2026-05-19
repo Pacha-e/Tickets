@@ -10,6 +10,7 @@ Sistema web de gestión de eventos, reservas y pagos de tickets desarrollado con
 - [Rutas disponibles](#rutas-disponibles)
 - [Instalación y ejecución](#instalación-y-ejecución)
 - [Variables de entorno](#variables-de-entorno)
+- [Despliegue](docs/DEPLOYMENT.md)
 - [Flujo de autenticación](#flujo-de-autenticación)
 - [Panel de administración](#panel-de-administración)
 - [Autor](#autor)
@@ -34,6 +35,8 @@ Las dos secciones principales son:
 | **PostgreSQL** | 15 | Base de datos relacional |
 | **psycopg2-binary** | 2.9.11 | Adaptador PostgreSQL para Django |
 | **Pillow** | 10.4.0 | Manejo de imágenes (campo ImageField) |
+| **reportlab** | 4.2.5 | Generación de tickets en PDF |
+| **qrcode[pil]** | 7.4.2 | Generación de códigos QR (pendiente) |
 | **Docker / Docker Compose** | — | Contenedores y orquestación |
 
 ---
@@ -50,23 +53,26 @@ Tickets/
 ├── apps/
 │   ├── usuarios/            # Perfil extendido del usuario
 │   │   ├── models.py
-│   │   ├── admin.py
 │   │   ├── signals.py       # Auto-creación de Perfil al registrar User
 │   │   └── apps.py
 │   ├── eventos/             # Eventos, lugares, categorías y tipos de ticket
 │   │   ├── models.py
+│   │   ├── services.py      # Consultas con select_related/prefetch
 │   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── admin.py
+│   │   └── urls.py
 │   ├── reservas/            # Reservas y tickets generados
 │   │   ├── models.py
+│   │   ├── services.py      # Lógica atómica: crear/cancelar/confirmar
+│   │   ├── ticket_generator.py  # TicketGenerator ABC + UUID/QR
+│   │   ├── pdf.py               # PDF de resumen de reserva
 │   │   ├── views.py
-│   │   ├── urls.py
 │   │   ├── forms.py
-│   │   └── admin.py
-│   └── pagos/               # Registro de pagos asociados a reservas
+│   │   └── tests.py         # Pruebas unitarias, vistas y concurrencia
+│   └── pagos/               # Registro de pagos y descarga de tickets PDF
 │       ├── models.py
-│       ├── admin.py
+│       ├── services.py      # procesar_pago @transaction.atomic
+│       ├── pdf.py           # PDF por ticket con QR
+│       ├── views.py
 │       └── urls.py
 ├── templates/
 │   ├── base.html            # Plantilla base con navbar y mensajes
@@ -131,6 +137,9 @@ Tickets/
 | GET | `/reservas/mis-reservas/` | `mis_reservas` | Autenticado | Lista de reservas del usuario |
 | GET/POST | `/reservas/crear/<evento_id>/` | `crear_reserva` | Autenticado | Formulario para crear una reserva |
 | POST | `/reservas/cancelar/<reserva_id>/` | `cancelar_reserva` | Autenticado | Cancela una reserva pendiente |
+| GET/POST | `/pagos/pagar/<reserva_id>/` | `pagar` | Autenticado | Formulario de pago |
+| GET | `/pagos/exitoso/<reserva_id>/` | `pago_exitoso` | Autenticado | Confirmación de pago exitoso |
+| GET | `/pagos/ticket/<ticket_id>/pdf/` | `descargar_ticket` | Autenticado | Descarga el ticket en PDF |
 | GET | `/admin/` | — | Staff | Panel de administración |
 
 ---
@@ -156,39 +165,108 @@ Tickets/
     ```
 4.  **Cargar datos de prueba (Seed SQL)**
     El archivo `seed_datos_postgres.sql` contiene datos iniciales (categorías, lugares, eventos, tickets y usuario de prueba).
-    Ejecuta el siguiente comando en la terminal para poblar la base de datos:
     ```bash
     docker compose exec -T db psql -U postgres -d ticketsdb < seed_datos_postgres.sql
     ```
-5.  **Crear superusuario** (Opcional)
+5.  **Compilar traducciones** (necesario para el selector de idioma)
+    ```bash
+    docker compose exec web python manage.py compilemessages
+    ```
+6.  **Ejecutar los tests**
+    ```bash
+    docker compose exec web python manage.py test
+    ```
+7.  **Crear superusuario** (Opcional)
     ```bash
     docker compose exec web python manage.py createsuperuser
     ```
-6.  **Acceder a la aplicación**
+8.  **Acceder a la aplicación**
     | URL | Descripción |
     | :--- | :--- |
     | http://localhost:8000/ | Aplicación principal |
     | http://localhost:8000/admin/ | Panel de administración |
 
-    **Usuario demo (Cliente para probar reservas):**
-    - Usuario: `cliente_demo`
-    - Contraseña: `1234`
+    **Usuario demo:**
+    - Usuario: `cliente_demo` / Contraseña: `1234`
 
 ---
 
 ## Variables de entorno
-Configuradas en `docker-compose.yml`. Para entornos distintos a desarrollo, se recomienda usar un archivo `.env`.
+
+Copia `.env.example` a `.env` y ajusta los valores. Para desarrollo local los valores por defecto funcionan directamente con Docker.
 
 | Variable | Valor por defecto | Descripción |
 | :--- | :--- | :--- |
+| **SECRET_KEY** | (generada) | Clave secreta de Django |
+| **DEBUG** | `True` | Modo depuración (usar `False` en producción) |
+| **ALLOWED_HOSTS** | `localhost,127.0.0.1` | Hosts permitidos |
 | **DB_NAME** | `ticketsdb` | Nombre de la base de datos |
 | **DB_USER** | `postgres` | Usuario de PostgreSQL |
 | **DB_PASSWORD** | `postgres` | Contraseña de PostgreSQL |
 | **DB_HOST** | `db` | Host del servicio de base de datos |
 | **DB_PORT** | `5432` | Puerto de PostgreSQL |
+| **EMAIL_BACKEND** | `console.EmailBackend` | Backend de correo (`console` en dev, `smtp.EmailBackend` en prod) |
+| **EMAIL_HOST** | _(vacío)_ | Servidor SMTP (ej. `smtp.gmail.com`, `smtp.mailtrap.io`) |
+| **EMAIL_PORT** | `587` | Puerto SMTP (587 para TLS, 465 para SSL) |
+| **EMAIL_USE_TLS** | `True` | Activar TLS en la conexión SMTP |
+| **EMAIL_HOST_USER** | _(vacío)_ | Usuario/dirección del remitente SMTP |
+| **EMAIL_HOST_PASSWORD** | _(vacío)_ | Contraseña o App Password del remitente |
+| **DEFAULT_FROM_EMAIL** | `noreply@vibepas.com` | Dirección "De:" en los correos enviados |
 
 > [!WARNING]
-> En producción reemplaza `SECRET_KEY` in `settings.py` por una clave segura y establece `DEBUG = False`.
+> En producción establece una `SECRET_KEY` segura, `DEBUG=False` y configura `ALLOWED_HOSTS` con tu dominio real.
+> Con `DEBUG=False` Django renderiza las plantillas `templates/404.html` y `templates/500.html` personalizadas.
+
+---
+
+## Configuración de correo (SMTP)
+
+El sistema envía dos tipos de correo automáticamente:
+- **Confirmación de reserva** — al completar el pago exitosamente (`apps/pagos/services.py`)
+- **Cancelación de reserva** — al cancelar una reserva (`apps/reservas/services.py`)
+
+### Desarrollo (consola)
+
+Por defecto los correos se imprimen en la consola del servidor. No requiere configuración adicional.
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
+### Producción con Gmail
+
+1. Activa la verificación en dos pasos en tu cuenta Google.
+2. Genera una **App Password** en [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+3. Configura en tu `.env`:
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=tu@gmail.com
+EMAIL_HOST_PASSWORD=tu-app-password-de-16-chars
+DEFAULT_FROM_EMAIL=noreply@vibepas.com
+```
+
+### Producción con Mailtrap (pruebas)
+
+Mailtrap permite capturar correos en staging sin enviarlos realmente. Obtén las credenciales en tu bandeja Mailtrap:
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.mailtrap.io
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=<mailtrap-user>
+EMAIL_HOST_PASSWORD=<mailtrap-password>
+DEFAULT_FROM_EMAIL=noreply@vibepas.com
+```
+
+> [!NOTE]
+> Las plantillas de correo se encuentran en `templates/emails/`:
+> - `reserva_confirmada.html` / `reserva_confirmada.txt`
+> - `reserva_cancelada.html` / `reserva_cancelada.txt`
 
 ---
 

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Pagar reserva{% endblock %}
+
+{% block content %}
+<h1>Confirmar pago</h1>
+
+<div style="border:1px solid #ccc; padding:20px; border-radius:6px; max-width:480px; margin-bottom:20px;">
+    <p><strong>Evento:</strong> {{ reserva.evento.nombre }}</p>
+    <p><strong>Tipo de ticket:</strong> {{ reserva.tipo_ticket.nombre }}</p>
+    <p><strong>Cantidad:</strong> {{ reserva.cantidad }}</p>
+    <p><strong>Total a pagar:</strong> ${{ monto }}</p>
+</div>
+
+<form method="post" style="max-width:480px;">
+    {% csrf_token %}
+
+    <div style="margin-bottom:14px;">
+        <label style="display:block; font-weight:bold; margin-bottom:6px;">Método de pago</label>
+        <select name="metodo" required
+            style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            <option value="">-- Selecciona --</option>
+            <option value="tarjeta">💳 Tarjeta</option>
+            <option value="pse">🏦 PSE</option>
+            <option value="efectivo">💵 Efectivo</option>
+        </select>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
+        <button type="submit"
+            onclick="return confirm('¿Confirmas el pago de ${{ monto }}?')"
+            style="background:#27ae60; color:white; padding:8px 18px; border:none; border-radius:4px; cursor:pointer;">
+            ✅ Confirmar pago
+        </button>
+        <a href="{% url 'mis_reservas' %}">Volver</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,22 +1,296 @@
 {% extends 'base.html' %}
 
-{% block title %}Mis reservas{% endblock %}
+{% block title %}Mis Pases — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ========================
+     MIS RESERVAS PAGE
+     ======================== */
+  .passes-hero {
+    background: var(--clr-dark);
+    padding: var(--sp-7) 0 var(--sp-6);
+  }
+  .passes-hero__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+  }
+  @media (min-width: 768px) {
+    .passes-hero__inner { padding: 0 var(--sp-6); }
+  }
+  .passes-hero__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    display: block;
+    margin-bottom: var(--sp-3);
+  }
+  .passes-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    line-height: 0.95;
+  }
+  .passes-hero__count {
+    margin-top: var(--sp-4);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(48% 0.012 65);
+  }
+
+  .passes-list {
+    max-width: 760px;
+    padding: var(--sp-7) var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+    margin: 0 auto;
+  }
+  @media (min-width: 768px) {
+    .passes-list { padding: var(--sp-7) var(--sp-6); }
+  }
+
+  /* Individual pass stub */
+  .pass-stub {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    position: relative;
+    overflow: hidden;
+  }
+  .pass-stub--pending  { border-color: var(--clr-gold); border-left-width: 4px; }
+  .pass-stub--confirmada { border-color: var(--clr-confirmed); }
+
+  .pass-stub__header {
+    background: var(--clr-dark);
+    padding: var(--sp-3) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .pass-stub__event-name {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(93% 0.020 65);
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+  }
+  .pass-stub__status { flex-shrink: 0; }
+
+  .pass-stub__body {
+    padding: var(--sp-4) var(--sp-5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3) var(--sp-5);
+  }
+  @media (min-width: 560px) {
+    .pass-stub__body { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .pass-stub__field {}
+  .pass-stub__field-label {
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .pass-stub__field-value {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  /* Perforation between body and footer */
+  .pass-stub__perf {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .pass-stub__perf::before,
+  .pass-stub__perf::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    margin: 0 -11px;
+    z-index: 1;
+  }
+  .pass-stub__perf-line {
+    flex: 1;
+    border-top: 2px dashed oklch(55% 0.01 65);
+  }
+
+  .pass-stub__footer {
+    padding: var(--sp-3) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .pass-stub__date {
+    font-size: 0.78rem;
+    color: var(--clr-muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* Empty state */
+  .passes-empty {
+    text-align: center;
+    padding: var(--sp-9) var(--sp-5);
+  }
+  .passes-empty__icon {
+    width: 64px;
+    height: 64px;
+    color: var(--clr-cream-dark);
+    margin: 0 auto var(--sp-5);
+  }
+  .passes-empty__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    margin-bottom: var(--sp-3);
+  }
+  .passes-empty__sub {
+    font-size: 0.92rem;
+    color: var(--clr-muted);
+    margin-bottom: var(--sp-5);
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>Mis reservas</h1>
+<!-- Hero -->
+<section class="passes-hero">
+  <div class="passes-hero__inner">
+    <span class="passes-hero__eyebrow">&#9733; Backstage pass &#9733;</span>
+    <h1 class="passes-hero__title">Mis Pases</h1>
+    <p class="passes-hero__count">
+      {% if reservas %}
+        {{ reservas|length }} pase{{ reservas|length|pluralize:"s" }} activo{{ reservas|length|pluralize:"s" }}
+      {% else %}
+        Sin pases activos
+      {% endif %}
+    </p>
+  </div>
+</section>
 
-{% for reserva in reservas %}
-    <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; border-radius:6px;">
-        <p><strong>Evento:</strong> {{ reserva.evento.nombre }}</p>
-        <p><strong>Tipo de ticket:</strong> {{ reserva.tipo_ticket.nombre }}</p>
-        <p><strong>Cantidad:</strong> {{ reserva.cantidad }}</p>
-        <p><strong>Estado:</strong> {{ reserva.get_estado_display }}</p>
-        <p><strong>Fecha de reserva:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</p>
+<!-- List -->
+<div class="passes-list">
+  {% for reserva in reservas %}
+    <article class="pass-stub pass-stub--{{ reserva.estado }}" aria-label="{{ reserva.evento.nombre }}">
+
+      <!-- Header -->
+      <div class="pass-stub__header">
+        <span class="pass-stub__event-name">{{ reserva.evento.nombre }}</span>
+        <div class="pass-stub__status">
+          {% if reserva.estado == 'pendiente' %}
+            <span class="badge badge-pending">Pendiente</span>
+          {% elif reserva.estado == 'confirmada' %}
+            <span class="badge badge-confirmed">Confirmado</span>
+          {% else %}
+            <span class="badge badge-cancelled">{{ reserva.get_estado_display }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Detail fields -->
+      <div class="pass-stub__body">
+        <div class="pass-stub__field">
+          <span class="pass-stub__field-label">Tipo</span>
+          <span class="pass-stub__field-value">{{ reserva.tipo_ticket.nombre }}</span>
+        </div>
+        <div class="pass-stub__field">
+          <span class="pass-stub__field-label">Cantidad</span>
+          <span class="pass-stub__field-value">{{ reserva.cantidad }}</span>
+        </div>
+        <div class="pass-stub__field">
+          <span class="pass-stub__field-label">Estado</span>
+          <span class="pass-stub__field-value">{{ reserva.get_estado_display }}</span>
+        </div>
+      </div>
+
+      <!-- Perforated divider -->
+      <div class="pass-stub__perf">
+        <div class="pass-stub__perf-line"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="pass-stub__footer">
+        <span class="pass-stub__date">
+          Reservado el {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}
+        </span>
         {% if reserva.estado == 'pendiente' %}
-            <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar</a>
+          <div style="display:flex; gap: var(--sp-2); flex-wrap: wrap;">
+            <a href="{% url 'pagar' reserva.id %}" class="btn btn-dark btn-sm">Pagar</a>
+            <form method="post" action="{% url 'cancelar_reserva' reserva.id %}"
+                  onsubmit="return confirm('¿Cancelar este pase?')"
+                  style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm">Cancelar</button>
+            </form>
+          </div>
+        {% else %}
+          <div style="display:flex; gap: var(--sp-2); flex-wrap: wrap;">
+            <a href="{% url 'detalle_evento' reserva.evento.id %}" class="btn btn-ghost btn-sm">
+              Ver evento
+            </a>
+            {% if reserva.estado == 'confirmada' %}
+            <a href="{% url 'descargar_reserva_ticket' reserva.id %}" class="btn btn-gold btn-sm" target="_blank">
+              Descargar PDF
+            </a>
+            {% endif %}
+          </div>
         {% endif %}
+      </div>
+    </article>
+
+  {% empty %}
+    <div class="passes-empty">
+      <svg class="passes-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+        <path d="M20 12V22H4V12"/>
+        <path d="M22 7H2v5h20V7z"/>
+        <path d="M12 22V7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+      </svg>
+      <h2 class="passes-empty__title">Sin pases todavía</h2>
+      <p class="passes-empty__sub">
+        Encuentra tu próximo show y consigue tu acceso.
+      </p>
+      <a href="{% url 'catalogo_eventos' %}" class="btn btn-dark btn-lg">
+        Ver eventos
+      </a>
     </div>
-{% empty %}
-    <p>No tienes reservas todavía. <a href="{% url 'home' %}">Ver eventos disponibles</a>.</p>
-{% endfor %}
+  {% endfor %}
+</div>
 {% endblock %}

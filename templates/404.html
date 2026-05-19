@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}404 — Página no encontrada | VIBEPAS{% endblock %}
+
+{% block content %}
+<section style="
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--sp-9) var(--sp-5);
+  gap: var(--sp-5);
+">
+  <p class="t-hero" style="
+    font-size: clamp(6rem, 20vw, 12rem);
+    line-height: 1;
+    color: var(--clr-gold);
+    opacity: 0.25;
+    margin: 0;
+  ">404</p>
+
+  <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+    <h1 class="t-xl" style="color: var(--clr-dark); margin: 0;">
+      {% trans "Página no encontrada" %}
+    </h1>
+    <p class="t-md" style="color: var(--clr-muted); max-width: 480px; margin: 0;">
+      {% trans "Esta página no existe o fue eliminada. El show continúa, pero aquí no hay nada." %}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: center;">
+    <a href="{% url 'home' %}" class="btn btn-gold btn-lg">{% trans "Volver al inicio" %}</a>
+    <a href="{% url 'catalogo_eventos' %}" class="btn btn-outline-dark btn-lg">{% trans "Ver eventos" %}</a>
+  </div>
+</section>
+{% endblock %}

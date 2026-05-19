@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-024arm@gdv+o7155nl@0db(_owa#1l1@2iwvc%)2_*)4#cur67'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-024arm@gdv+o7155nl@0db(_owa#1l1@2iwvc%)2_*)4#cur67')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG=False in production via environment variable.
+# Django only renders custom 404/500 templates (templates/404.html, templates/500.html)
+# when DEBUG=False. With DEBUG=True the default technical error page is shown instead.
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# In production, set ALLOWED_HOSTS to your actual domain, e.g. "vibepas.com,www.vibepas.com".
+# This is also required for custom error pages to render correctly.
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.getenv(
+    'SECURE_SSL_REDIRECT',
+    'False' if DEBUG else 'True',
+) == 'True'
+SESSION_COOKIE_SECURE = os.getenv(
+    'SESSION_COOKIE_SECURE',
+    'False' if DEBUG else 'True',
+) == 'True'
+CSRF_COOKIE_SECURE = os.getenv(
+    'CSRF_COOKIE_SECURE',
+    'False' if DEBUG else 'True',
+) == 'True'
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0' if DEBUG else '3600'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv(
+    'SECURE_HSTS_INCLUDE_SUBDOMAINS',
+    'False' if DEBUG else 'True',
+) == 'True'
+SECURE_HSTS_PRELOAD = os.getenv(
+    'SECURE_HSTS_PRELOAD',
+    'False' if DEBUG else 'True',
+) == 'True'
 
 
 # Application definition
@@ -41,17 +71,22 @@ INSTALLED_APPS = [
     'apps.eventos',
     'apps.reservas',
     'apps.pagos',
+    'django.contrib.sitemaps',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if not DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'config.urls'
 
@@ -81,16 +116,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'ticketsdb'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
-        'HOST': os.getenv('DB_HOST', 'db'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'ticketsdb'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 
 # Password validation
@@ -120,19 +166,44 @@ LANGUAGE_CODE = 'es-co'
 TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
+
+LANGUAGES = [
+    ('es', _('Español')),
+    ('en', _('English')),
+]
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = Path(os.getenv('STATIC_ROOT', BASE_DIR / 'staticfiles'))
+STATICFILES_STORAGE = os.getenv(
+    'STATICFILES_STORAGE',
+    'django.contrib.staticfiles.storage.StaticFilesStorage'
+    if DEBUG
+    else 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+)
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', BASE_DIR / 'media'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email Config for Notifications
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@vibepas.com')
+

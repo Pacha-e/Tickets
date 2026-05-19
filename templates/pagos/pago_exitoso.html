@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago confirmado — {{ reserva.evento.nombre }} — VIBEPAS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .success-wrap {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: var(--sp-8) var(--sp-5) var(--sp-9);
+  }
+  @media (min-width: 600px) {
+    .success-wrap { padding: var(--sp-8) var(--sp-6) var(--sp-9); }
+  }
+
+  .success-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-7);
+    text-align: center;
+  }
+  .success-badge__circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--clr-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 10px oklch(20% 0.04 65 / 0.12);
+  }
+  .success-badge__circle svg {
+    width: 36px;
+    height: 36px;
+    color: var(--clr-gold);
+    stroke-width: 2.5;
+  }
+  .success-badge__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--clr-dark);
+    line-height: 1;
+  }
+  .success-badge__sub {
+    font-size: 0.88rem;
+    color: var(--clr-muted);
+    line-height: 1.6;
+    max-width: 340px;
+  }
+
+  /* Confirmed ticket card */
+  .ticket-confirmed {
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-border);
+    overflow: hidden;
+    margin-bottom: var(--sp-5);
+  }
+  .ticket-confirmed__band {
+    background: var(--clr-dark);
+    padding: var(--sp-3) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .ticket-confirmed__event {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    color: oklch(94% 0.022 65);
+    line-height: 1.1;
+  }
+
+  .ticket-confirmed__body {
+    padding: var(--sp-4) var(--sp-5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3) var(--sp-5);
+  }
+  @media (min-width: 480px) {
+    .ticket-confirmed__body { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .tc-label {
+    font-family: var(--font-display);
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .tc-value {
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+  .tc-value--gold {
+    color: oklch(58% 0.13 75);
+  }
+
+  .ticket-confirmed__perf {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .ticket-confirmed__perf::before,
+  .ticket-confirmed__perf::after {
+    content: '';
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 2px solid var(--clr-border);
+    flex-shrink: 0;
+    margin: 0 -11px;
+    z-index: 1;
+  }
+  .ticket-confirmed__perf-line {
+    flex: 1;
+    border-top: 2px dashed oklch(55% 0.01 65);
+  }
+
+  .ticket-confirmed__footer {
+    padding: var(--sp-3) var(--sp-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .ticket-confirmed__id {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+  }
+  .ticket-confirmed__barcode {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 28px;
+  }
+  .ticket-confirmed__barcode span {
+    display: inline-block;
+    width: 3px;
+    background: var(--clr-dark);
+    opacity: 0.4;
+  }
+
+  .ticket-qr-list {
+    padding: 0 var(--sp-5) var(--sp-4);
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .ticket-qr {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    align-items: center;
+    gap: var(--sp-3);
+    border-top: 1px dashed oklch(55% 0.01 65);
+    padding-top: var(--sp-3);
+  }
+  .ticket-qr__image {
+    width: 88px;
+    height: 88px;
+    background: #fff;
+    border: 2px solid var(--clr-border);
+    padding: 4px;
+    object-fit: contain;
+  }
+  .ticket-qr__code {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.72rem;
+    color: var(--clr-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  @media (min-width: 400px) {
+    .success-actions { flex-direction: row; }
+    .success-actions .btn-full { flex: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-wrap">
+
+  <div class="success-badge">
+    <div class="success-badge__circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h1 class="success-badge__title">¡Pago confirmado!</h1>
+    <p class="success-badge__sub">
+      Tu pase está <strong>confirmado</strong>. Nos vemos en el show.
+    </p>
+  </div>
+
+  <!-- Confirmed ticket -->
+  <div class="ticket-confirmed" role="region" aria-label="Pase confirmado">
+    <div class="ticket-confirmed__band">
+      <span class="ticket-confirmed__event">{{ reserva.evento.nombre }}</span>
+      <span class="badge badge-confirmed">Confirmado</span>
+    </div>
+
+    <div class="ticket-confirmed__body">
+      <div>
+        <span class="tc-label">Tipo de pase</span>
+        <span class="tc-value">{{ reserva.tipo_ticket.nombre }}</span>
+      </div>
+      <div>
+        <span class="tc-label">Cantidad</span>
+        <span class="tc-value">{{ reserva.cantidad }}</span>
+      </div>
+      <div>
+        <span class="tc-label">Fecha</span>
+        <span class="tc-value">{{ reserva.evento.fecha }}</span>
+      </div>
+      <div>
+        <span class="tc-label">Hora</span>
+        <span class="tc-value">{{ reserva.evento.hora }}</span>
+      </div>
+      <div>
+        <span class="tc-label">Lugar</span>
+        <span class="tc-value">{{ reserva.evento.lugar.nombre }}</span>
+      </div>
+      {% if reserva.pago %}
+      <div>
+        <span class="tc-label">Método de pago</span>
+        <span class="tc-value tc-value--gold">{{ reserva.pago.get_metodo_display }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="ticket-confirmed__perf">
+      <div class="ticket-confirmed__perf-line"></div>
+    </div>
+
+    <div class="ticket-confirmed__footer">
+      <span class="ticket-confirmed__id">Pase #{{ reserva.id|stringformat:"05d" }}</span>
+      <div class="ticket-confirmed__barcode" aria-hidden="true">
+        {% for h in "7324916571832491672" %}
+          <span style="height: {% cycle '60%' '90%' '75%' '100%' '50%' '80%' '65%' '95%' '55%' '85%' %}"></span>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if reserva.tickets.all %}
+      <div class="ticket-qr-list" aria-label="CÃ³digos QR de tus pases">
+        {% for ticket in reserva.tickets.all %}
+          <div class="ticket-qr">
+            {% if ticket.qr_code %}
+              <img class="ticket-qr__image" src="{{ ticket.qr_code.url }}" alt="QR del pase {{ forloop.counter }}">
+            {% endif %}
+            <div>
+              <span class="tc-label">CÃ³digo del pase {{ forloop.counter }}</span>
+              <div class="ticket-qr__code">{{ ticket.codigo }}</div>
+              <a href="{% url 'descargar_ticket' ticket.id %}" class="btn btn-outline-dark btn-sm mt-4">
+                Descargar PDF
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="success-actions">
+    <a href="{% url 'mis_reservas' %}" class="btn btn-dark btn-lg btn-full">
+      Ver mis pases
+    </a>
+    <a href="{% url 'catalogo_eventos' %}" class="btn btn-ghost btn-lg btn-full">
+      Ver más eventos
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+VIBEPAS — Pase Confirmado
+==========================
+
+Hola, {{ reserva.usuario.username }}!
+
+Tu pago fue aprobado y tu pase está confirmado. ¡Nos vemos en el show!
+
+Detalles:
+  Evento:       {{ reserva.evento.nombre }}
+  Fecha:        {{ reserva.evento.fecha }}
+  Lugar:        {{ reserva.evento.lugar.nombre }}
+  Tipo de pase: {{ reserva.tipo_ticket.nombre }}
+  Cantidad:     {{ reserva.cantidad }}
+  Monto pagado: ${{ pago.monto }}
+
+Puedes ver y descargar tus pases desde "Mis Pases" en la plataforma.
+
+¡Rock on!
+— VIBEPAS
+Sin reembolsos. A todo volumen.
